@@ -1,87 +1,60 @@
-import './App.css'
-
-import { useState, useEffect } from 'react'
-import { BsTrash, BsBookmarkCheck, BsBookmarkCheckFill } from 'react-icons/bs'
-
-const API = 'http://localhost:5000'
+import './App.css';
+import { useState, useEffect } from 'react';
+import { BsTrash, BsBookmarkCheck, BsBookmarkCheckFill } from 'react-icons/bs';
 
 function App() {
-  const [title, setTitle] = useState("")
-  const [time, setTime] = useState("")
-  const [todos, setTodos] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [title, setTitle] = useState("");
+  const [time, setTime] = useState("");
+  const [todos, setTodos] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  //Load todos on page load
+  // Load todos from localStorage on page load
   useEffect(() => {
+    const loadData = () => {
+      const savedTodos = JSON.parse(localStorage.getItem('todos')) || [];
+      setTodos(savedTodos);
+    };
 
-    const loadData = async() => {
+    loadData();
+  }, []);
 
-      setLoading(true)
-
-      const res = await fetch(API + "/todos")
-      .then((res) => res.json())
-      .then((data) => data)
-      .catch((err) => console.log(err))
-
-      setLoading(false)
-      
-      setTodos(res)
-    }
-
-    loadData()
-
-  }, [])
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
     const todo = {
-      id: Math.random(),
+      id: Math.random(), // Use UUID or another unique method in production
       title,
       time,
       done: false,
-    }
+    };
 
-    //Envio para API
-    await fetch(API + "/todos", {
-      method: "POST",
-      body: JSON.stringify(todo),
-      headers: {"Content-Type": "application/json",
-      },
-    })
+    // Update the local storage
+    const updatedTodos = [...todos, todo];
+    localStorage.setItem('todos', JSON.stringify(updatedTodos));
 
-    setTodos((prevState) => [...prevState, todo])
+    setTodos(updatedTodos);
+    setTitle("");
+    setTime("");
+  };
 
-    setTitle("")
-    setTime("")
-  }
+  const handleDelete = (id) => {
+    const updatedTodos = todos.filter((todo) => todo.id !== id);
+    localStorage.setItem('todos', JSON.stringify(updatedTodos));
+    setTodos(updatedTodos);
+  };
 
-  const handleDelete = async (id) => {
-    await fetch(API + "/todos/" + id, {
-      method: "DELETE",
-    })
+  const handleEdit = (todoToUpdate) => {
+    const updatedTodos = todos.map((todo) =>
+      todo.id === todoToUpdate.id
+        ? { ...todo, done: !todo.done }
+        : todo
+    );
+    localStorage.setItem('todos', JSON.stringify(updatedTodos));
+    setTodos(updatedTodos);
+  };
 
-    setTodos((prevState) => prevState.filter((todo) => todo.id !== id))
-  }
-
-  const handleEdit = async(todo) => {
-
-    todo.done = !todo.done
-
-    const data = await fetch(API + "/todos/" + todo.id, {
-      method: "PUT",
-      body: JSON.stringify(todo),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-
-    setTodos((prevState) => prevState.map((t) => (t.id === data.id ? (t = data) : t))
-    )
-  }
-
-  if(loading) {
-    return <p>Carregando...</p>
+  if (loading) {
+    return <p>Carregando...</p>;
   }
 
   return (
@@ -91,39 +64,34 @@ function App() {
       </div>
 
       <div className='form-todo'>
-
         <h2>Insira a sua próxima tarefa:</h2>
 
         <form onSubmit={handleSubmit}>
-
           <div className='form-control'>
             <label htmlFor="title">O que você vai fazer?</label>
-
-            <input 
-            type="text" 
-            name="title" 
-            placeholder='Título da tarefa' 
-            onChange={(e) => setTitle(e.target.value)}
-            value={title || ""} 
-            required
+            <input
+              type="text"
+              name="title"
+              placeholder='Título da tarefa'
+              onChange={(e) => setTitle(e.target.value)}
+              value={title || ""}
+              required
             />
           </div>
 
           <div className='form-control'>
             <label htmlFor="time">Duração:</label>
-
-            <input 
-            type="text" 
-            name="time" 
-            placeholder='Tempo estimado (em horas)' 
-            onChange={(e) => setTime(e.target.value)}
-            value={time || ""} 
-            required
+            <input
+              type="text"
+              name="time"
+              placeholder='Tempo estimado (em horas)'
+              onChange={(e) => setTime(e.target.value)}
+              value={time || ""}
+              required
             />
           </div>
 
           <input type="submit" value="Criar Tarefa" />
-
         </form>
       </div>
 
@@ -144,7 +112,7 @@ function App() {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
