@@ -2,13 +2,11 @@
   "name": "projeto-todo",
   "private": true,
   "version": "0.0.0",
-  "homepage": "http://caiomangabeira.github.io/projeto-todo",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build",
     "lint": "eslint .",
     "preview": "vite preview",
     "server": "json-server data/db.json --port 5000"
